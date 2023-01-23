@@ -34,7 +34,7 @@ browserOpenPromise
     return tab.click(".ui-btn.ui-btn-large.ui-btn-primary.auth-button.ui-btn-styled"); //click on the given selector element  // login button
   })
   .then(function () {
-    return waitAndClick("#base-card-1-link"); // this is a promisified fxn (Check Dev/Dev-Sp/Lec8_Automation/facts/creatPromise.js for `how to create own promise`)
+    return waitAndClick("#base-card-1-link"); // this is a promisified fxn (Check Lect 11 Notes for `how to create own promise`)
   })
   .then(function () {
     return waitAndClick('a[data-attr1="warmup"]');
@@ -56,7 +56,7 @@ browserOpenPromise
       let pendingPromise = tab.evaluate(function (element) { return element.getAttribute("href");}  , oneATag); // aur usme se href nikal lete hai
       // evaluate isme passed fxn ko jaake dom me chla deta hai 
       // us fxn me element(oneTag in this case) pass hota hai jo evaluate me as 2nd argument diya jaata hai  
-      // ab kyunki hume yha pe herf chahiye hai 
+      // ab kyunki hume yha pe href chahiye hai 
       // isiliye humne getAttribute lga ke jo attribute(href in this case) chahiye hota hai utha liya
       // evaluate hume ek ek karke pending promises dega jise hum hmare allPendingPromises me push karte jaayenge
       allPendingPromises.push(pendingPromise);
@@ -71,7 +71,7 @@ browserOpenPromise
   })
   .then(function(allQuesLinks){
     let oneQuesSolvePromise = solveQuestion(allQuesLinks[0]);
-    for(let i=1 ; i<allQuesLinks.length ; i++){   // to understand this refer Lec7_Promises/nfiles/asyncSerial 
+    for(let i=1 ; i<allQuesLinks.length ; i++){   // to understand this refer Notes -> Lect 12 -> n files Promises Serial : asyncSerial.js
       oneQuesSolvePromise = oneQuesSolvePromise.then(function(){
         let nextQuesSolvePromise = solveQuestion(allQuesLinks[i]);
         return nextQuesSolvePromise;
@@ -137,7 +137,7 @@ browserOpenPromise
         return tab.waitForTimeout(2000); // isse wait hota hai jitna no. pass kiya h utna milli second ke liye
       })
       .then(function(){
-        return tab.type('.custominput' , gCode); // why we type in custom input rather than typing in direct editor[#3]
+        return tab.type('.custominput' , gCode); // [#3] why we type in custom input rather than typing in direct editor
       })
       .then(function(){
         return tab.keyboard.down("Control");
@@ -243,7 +243,7 @@ browserOpenPromise
  #2.
  jab bhi kisi ek tab se dusre tab me navigation hota hai ya fir ek hi tab me ek page se dusre page me navigation hota hai
  to agle wale page pe jab tak hum wo selector mil nhi jaata tab tak hume wait krna pdega kyunki navigation aur load hone me kuch time lgta hai
- waitAndClick ek normal fxn tha aur usko hume ek promise me bdla hai (Check Dev/Dev-Sp/Lec8_Automation/facts/creatPromise.js for `how to create own promise`)
+ waitAndClick ek normal fxn tha aur usko hume ek promise me bdla hai (Check Lect 11 Notes for `how to create own promise`)
  taki next wale then ka scb previous wale(jisme ye fxn likh rkha hai) then ke scb pe dependent ho jaaye 
  
  waitAndClick function explaination : 
