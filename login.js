@@ -9,32 +9,34 @@ let gCode;
 
 // by default headless = true
 
-let browserOpenPromise = puppeteer.launch({   // gives a browser instance 
-  headless: false,         // browser open hota dhikhega
-  defaultViewport: null,   // jo browser ka default viewport(800*600) set hota h wo hat jaayea
-  args: ["--start-maximized"], // window maximize ho jaayegi
+let browserOpenPromise = puppeteer.launch({
+  headless: false,
+  defaultViewport: null,
+  args: ["--start-maximized"],
 });
 
 browserOpenPromise
   .then(function (browser) {
     console.log("browser is opened !");
-    return browser.pages();  // gives array of tabs/pages and returned them
+    return browser.pages();
   })
   .then(function (pages) {
-    tab = pages[0]; // us pages arr me se 1st page nikal liya
-    return tab.goto("https://www.hackerrank.com/auth/login");  //goto the link given
+    tab = pages[0];
+    return tab.goto("https://www.hackerrank.com/auth/login");
   })
   .then(function () {
-    return tab.type("#input-1", id);  // type a value(id in this case) in the given selector element // id box
+    return tab.type("#input-1", id);
   })
   .then(function () {
-    return tab.type("#input-2", pw);  // password box
+    return tab.type("#input-2", pw);
   })
   .then(function () {
-    return tab.click(".ui-btn.ui-btn-large.ui-btn-primary.auth-button.ui-btn-styled"); //click on the given selector element  // login button
+    return tab.click(
+      ".ui-btn.ui-btn-large.ui-btn-primary.auth-button.ui-btn-styled"
+    ); // login hojata hai click se
   })
   .then(function () {
-    return waitAndClick("#base-card-1-link"); // this is a promisified fxn (Check Lect 11 Notes for `how to create own promise`)
+    return waitAndClick("#base-card-1-link");
   })
   .then(function () {
     return waitAndClick('a[data-attr1="warmup"]');
@@ -45,33 +47,25 @@ browserOpenPromise
     });
   })
   .then(function () {
-    // tab.$() // document.querySelector;  // it will run document.querySelector in the browser and gives you only first matching elements
+    // tab.$() // document.querySelector;
     return tab.$$(".js-track-click.challenge-list-item"); // it will run document.querySelectorAll in the browser and gives you array of all the elements
   })
-  .then(function (allQuesArray) { // jo array piche se mila hai idhar pass hota hai
-    // [<a /> , <a /> , <a /> , <a />]; // array me saare questions pde hai in the form of a tags.
+  .then(function (allQuesArray) {
+    // [<a /> , <a /> , <a /> , <a />];
     let allPendingPromises = [];
     for (let i = 0; i < allQuesArray.length; i++) {
-      let oneATag = allQuesArray[i];   // ek a tag nikalte hai 
-      let pendingPromise = tab.evaluate(function (element) { return element.getAttribute("href");}  , oneATag); // aur usme se href nikal lete hai
-      // evaluate isme passed fxn ko jaake dom me chla deta hai 
-      // us fxn me element(oneTag in this case) pass hota hai jo evaluate me as 2nd argument diya jaata hai  
-      // ab kyunki hume yha pe href chahiye hai 
-      // isiliye humne getAttribute lga ke jo attribute(href in this case) chahiye hota hai utha liya
-      // evaluate hume ek ek karke pending promises dega jise hum hmare allPendingPromises me push karte jaayenge
+      let oneATag = allQuesArray[i];
+      let pendingPromise = tab.evaluate(function (element) { return element.getAttribute("href");}  , oneATag);
       allPendingPromises.push(pendingPromise);
     }
     // [ Promise<Pending> , Promise<Pending> , Promise<Pending> , Promise<Pending> ];
-    let allPromisesCombined = Promise.all(allPendingPromises); 
-    // Promise.all gives a single pending promise in exchange of multiple pending promises
-    // aur jaise hi un sb pending promises ki state change ho jaati hai to iski bhi state change ho jaati hai
-    // aur ye un sb promises se milne wale data ko ek array me daalke de deta hai
-    // indirectly Promise.all ne sb pending promises pe ek then ki call lga di hai
-    return allPromisesCombined; // to yha se saare questions ke links/hrefs ka array next wale scb me jaayega
+    let allPromisesCombined = Promise.all(allPendingPromises);
+    // Promise<Pending>
+    return allPromisesCombined;
   })
   .then(function(allQuesLinks){
     let oneQuesSolvePromise = solveQuestion(allQuesLinks[0]);
-    for(let i=1 ; i<allQuesLinks.length ; i++){   // to understand this refer Notes -> Lect 12 -> n files Promises Serial : asyncSerial.js
+    for(let i=1 ; i<allQuesLinks.length ; i++){
       oneQuesSolvePromise = oneQuesSolvePromise.then(function(){
         let nextQuesSolvePromise = solveQuestion(allQuesLinks[i]);
         return nextQuesSolvePromise;
@@ -131,13 +125,13 @@ browserOpenPromise
   }
   
   function pasteCode(){
-    return new Promise(function(scb , fcb){ //scb = next then ka callback fxn && fcb = bdi wali chain ka catch ka callback fxn
+    return new Promise(function(scb , fcb){
       let waitAndClickPromise = waitAndClick('.checkbox-input');
       waitAndClickPromise.then(function(){
-        return tab.waitForTimeout(2000); // isse wait hota hai jitna no. pass kiya h utna milli second ke liye
+        return tab.waitForTimeout(2000);
       })
       .then(function(){
-        return tab.type('.custominput' , gCode); // [#3] why we type in custom input rather than typing in direct editor
+        return tab.type('.custominput' , gCode);
       })
       .then(function(){
         return tab.keyboard.down("Control");
@@ -146,16 +140,16 @@ browserOpenPromise
         return tab.keyboard.press("A");
       })
       .then(function(){
-        return tab.keyboard.press("X");  // cut
+        return tab.keyboard.press("X");
       })
       .then(function(){
-        return tab.click('.monaco-scrollable-element.editor-scrollable.vs'); // click on editor
+        return tab.click('.monaco-scrollable-element.editor-scrollable.vs');
       })
       .then(function(){
-        return tab.keyboard.press("A"); // sidha paste nhi kiya taki agr pahle se kuch likha ho wo select ho jaaye 
+        return tab.keyboard.press("A");
       })
       .then(function(){
-        return tab.keyboard.press("V");  // aur fir selected text ki jagah hmara code paste krde paste
+        return tab.keyboard.press("V");
       })
       .then(function(){
         return tab.keyboard.up("Control");
@@ -168,32 +162,31 @@ browserOpenPromise
 
   function handleLockBtn(){
     return new Promise(function(scb , fcb){
-      let waitForLockBtn = tab.waitForSelector('.ui-btn.ui-btn-normal.ui-btn-primary.ui-btn-styled' , {visible:true , timeout:5000});  // timeout : agr 5s me selector nhi mila to ye catch ko call lga dega 
+      let waitForLockBtn = tab.waitForSelector('.ui-btn.ui-btn-normal.ui-btn-primary.ui-btn-styled' , {visible:true , timeout:5000});
       waitForLockBtn.then(function(){
         return tab.$('.ui-btn.ui-btn-normal.ui-btn-primary.ui-btn-styled');
       })
       .then(function(lockButton){
-        return tab.evaluate(function(elem){ return elem.click()  } , lockButton); // simple click didn't work isiliye ye jugaad lga ke click krwaya
+        return tab.evaluate(function(elem){ return elem.click()  } , lockButton);
       })
       .then(function(){
         // Lock Button Found !!
         console.log("Lock Button Found !!");
         scb();
       })
-      .catch(function(){ 
+      .catch(function(){
         // Lock Button Not Found !!
         console.log("Lock Button not found !!");
-        scb();  // agr lock button nhi mila to bhi scb ko call lgegi kyunki maybe lock button manually hta ho ya fir pahle se na ho
+        scb();
       })
     })
   }
 
-  // Humne kaise solveQuestion ko ek promisified fxn bnaya iske liye waitAndClick fxn ki explaination dekhlo 
-  function solveQuestion(quesLink){  // iske pass ek ek karke sabhi questions ke link aayenge
+  function solveQuestion(quesLink){
     return new Promise( function(scb , fcb){
       let gotoPromise = tab.goto("https://www.hackerrank.com"+quesLink);
       gotoPromise.then(function(){
-       return waitAndClick('div[data-attr2="Editorial"]'); // editorial page
+       return waitAndClick('div[data-attr2="Editorial"]');
       })
       .then(function(){
         return handleLockBtn();
@@ -202,13 +195,13 @@ browserOpenPromise
         return getCode();
       })
       .then(function(){
-        return tab.click('div[data-attr2="Problem"]');  // problem page
+        return tab.click('div[data-attr2="Problem"]');
       })
       .then(function(){
         return pasteCode();
       })
       .then(function(){
-        return tab.click('.ui-btn.ui-btn-normal.ui-btn-primary'); // submit button
+        return tab.click('.ui-btn.ui-btn-normal.ui-btn-primary');
       })
       .then(function(){
         scb();
@@ -218,10 +211,9 @@ browserOpenPromise
       })
     });
   }
- 
- function waitAndClick(selector) { // [#2]
-  return new Promise(function (scb, fcb) { //[#1]
-    let waitPromise = tab.waitForSelector(selector, { visible: true }); // jo selector pass kiya hai uske liye wait hoga.{visible : true} means jab tak wo visible nhi ho jaata
+ function waitAndClick(selector) {
+  return new Promise(function (scb, fcb) {
+    let waitPromise = tab.waitForSelector(selector, { visible: true });
     waitPromise
       .then(function () {
         return tab.click(selector);
@@ -234,37 +226,3 @@ browserOpenPromise
       });
   });
  }
-
- /*
- #1. scb = next wale then ka function yani next wale then ka scb
-     fcb = badi wali chain ke catch ka fxn yani badi wali chain ke catch ka fcb
-
-
- #2.
- jab bhi kisi ek tab se dusre tab me navigation hota hai ya fir ek hi tab me ek page se dusre page me navigation hota hai
- to agle wale page pe jab tak hum wo selector mil nhi jaata tab tak hume wait krna pdega kyunki navigation aur load hone me kuch time lgta hai
- waitAndClick ek normal fxn tha aur usko hume ek promise me bdla hai (Check Lect 11 Notes for `how to create own promise`)
- taki next wale then ka scb previous wale(jisme ye fxn likh rkha hai) then ke scb pe dependent ho jaaye 
- 
- waitAndClick function explaination : 
- 1. Iss fxn ko ek selector milta hai
- 2. Hum promise ka ek object create krte hai jisme ek fxn pass kiya hai jise promise obj call lgayega 
-    jab use scb ya fcb mil jaayenge
- 3. puppeteer ke fxn waitForSelector ko call lgayi jaati hai jo ek promise deta hai
-    aur us promise par humne aage then aur catch ki calls lga rkhi hai
- 4. jaise hi waitForSelector ko selector visible hoga waitPromise ki state change hogi 
-    aur uspe lge then ka scb chlega means selector par click hoga
-    aur agr selector par click ho gya to scb yani jaha pe waitAndClick fxn likh rkha hai uske next wale then ke scb ko call lg jaayegi
-    lekin agr koi then fail ho jaata hai to fcb yani badi wali chain ke catck ke fxn ko call lg jaayegi
-
- */
-
-  /*
-  #3. Jo code hume mila hai wo humne ek variable me store krwaya hai 
-      wo kahi pe copy nhi ho rkha 
-      aur agr hum us code ko sidha monacco editor pe type krenge to hmare pass extra closing brackets('}') aa jaayenge
-      kyunki monacco editor me opening bracket ke liye closing bracket apne aap aa jaata hai 
-      isiliye hume iss code ko kahi aur type krna hoga aur fir waha se cut krke editor me paste krna hoga
-      isiliye hum code ko custom input me type krte hai pahle aur fir custom input se cut krke editor me paste kr dete hai
-
-  */
